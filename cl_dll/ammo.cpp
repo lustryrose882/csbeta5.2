@@ -270,6 +270,48 @@ int CHud :: MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf )
 	return 1;
 }
 
+void sub_10009940(char *Str, int a2)
+{
+	char *v2;
+	char *v3;
+	char *v4;
+	char v5;
+	char *i;
+	char v8[32];
+
+	v2 = strcpy(v8, "misc/talk.wav");
+	v3 = strstr(Str, "%!");
+	v4 = v3;
+	if ( v3 )
+	{
+		v5 = v3[1];
+		for ( i = v4 + 1; v5 > 32; ++i )
+		{
+		if ( v5 >= 122 )
+			break;
+		*v2 = v5;
+		v5 = i[1];
+		++v2;
+		}
+		*v2 = 0;
+		strcpy(v4, i);
+	}
+	PlaySound(v8, 1);
+}
+
+int CHud :: MsgFunc_SendAudio( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	READ_BYTE( ); // tf?
+
+	char *sentence = READ_STRING( );
+
+	sub_10009940(sentence, iSize -1);
+
+	return 1;
+}
+
 int CHudAmmo::Init(void)
 {
 	gHUD.AddHudElem(this);

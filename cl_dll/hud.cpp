@@ -64,6 +64,11 @@ int __MsgFunc_ReloadSound(const char *pszName, int iSize, void *pbuf)
 	return gHUD.MsgFunc_ReloadSound(pszName, iSize, pbuf );
 }
 
+int __MsgFunc_SendAudio(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_SendAudio(pszName, iSize, pbuf );
+}
+
 // This is called every time the DLL is loaded
 void CHud :: Init( void )
 {
@@ -74,6 +79,7 @@ void CHud :: Init( void )
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
 	HOOK_MESSAGE( ReloadSound );
+	HOOK_MESSAGE( SendAudio );
 
 	m_iLogo = 0;
 	m_iFOV = 0;
