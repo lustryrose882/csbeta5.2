@@ -111,10 +111,7 @@ int CHudScoreboard :: Draw( float fTime )
 	int ypos = ROW_RANGE_MIN + (list_slot * ROW_GAP);
 	int	xpos = NAME_RANGE_MIN + xpos_rel;
 
-	if ( !gHUD.m_Teamplay ) 
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
-	else
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
+	gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
 
 	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 255, 140, 0 );
 	gHUD.DrawHudString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
