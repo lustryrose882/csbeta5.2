@@ -62,6 +62,16 @@ void CHudStatusBar :: Reset( void )
 	m_iStatusValues[0] = 1;  // 0 is the special index, which always returns true
 }
 
+inline void InsertTextMsg( char *szDst, size_t sLen, const char *szMsgName)
+{
+	client_textmessage_t *msg = TextMessageGet(szMsgName);
+	if( msg )
+	{
+		strncpy( szDst, msg->pMessage, sLen );
+	}
+	else strncpy( szDst, szMsgName, sLen );
+}
+
 void CHudStatusBar :: ParseStatusString( int line_num )
 {
 	// localise string first
@@ -141,6 +151,24 @@ void CHudStatusBar :: ParseStatusString( int line_num )
 							break;
 						case 'i':  // number
 							sprintf( szRepString, "%d", indexval );
+							break;
+						case 'h':  // health
+							InsertTextMsg(szRepString, MAX_PLAYER_NAME_LENGTH, "Health");
+							break;
+						case 'c':
+							if( indexval == 1 )
+							{
+								InsertTextMsg(szRepString, MAX_PLAYER_NAME_LENGTH, "Friend");
+							}
+							else if( indexval == 2 )
+							{
+								InsertTextMsg(szRepString, MAX_PLAYER_NAME_LENGTH, "Enemy");
+							}
+							else if( indexval == 3 )
+							{
+								InsertTextMsg(szRepString, MAX_PLAYER_NAME_LENGTH, "Hostage");
+							}
+							else szRepString[0] = 0;
 							break;
 						default:
 							szRepString[0] = 0;
