@@ -68,7 +68,7 @@ int CHudTimer::Draw( float fTime )
 	gEngfuncs.pfnFillRGBA(x + iWatchWidth / 4, y + gHUD.m_iFontHeight / 4, 2, 2, r, g, b, 100);
 	gEngfuncs.pfnFillRGBA(x + iWatchWidth / 4, y + gHUD.m_iFontHeight - gHUD.m_iFontHeight / 4, 2, 2, r, g, b, 100);
 
-	gHUD.DrawHudNumber2( x + iWatchWidth / 2, y, true, 2, min, r, g, b );
+	gHUD.DrawHudNumber2( x + iWatchWidth / 2, y, true, 2, sec, r, g, b );
 	return 1;
 }
 
