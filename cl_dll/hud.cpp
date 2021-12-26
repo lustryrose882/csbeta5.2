@@ -59,6 +59,10 @@ int __MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_ReloadSound(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_ReloadSound(pszName, iSize, pbuf );
+}
 
 // This is called every time the DLL is loaded
 void CHud :: Init( void )
@@ -69,6 +73,7 @@ void CHud :: Init( void )
 	HOOK_MESSAGE( InitHUD );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( ReloadSound );
 
 	m_iLogo = 0;
 	m_iFOV = 0;
@@ -108,6 +113,9 @@ void CHud :: Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
+	m_Timer.Init();
+	m_ProgressBar.Init();
+	m_Money.Init();
 
 	m_SayText.Init();
 	m_Menu.Init();
@@ -241,6 +249,11 @@ void CHud :: VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+	m_Timer.VidInit();
+	m_ProgressBar.VidInit();
+	m_Money.VidInit();
+
+
 }
 
 int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)

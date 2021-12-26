@@ -148,6 +148,7 @@
     <ClCompile Include="hud_update.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="message.cpp" />
+    <ClCompile Include="money.cpp" />
     <ClCompile Include="MOTD.cpp" />
     <ClCompile Include="parsemsg.cpp" />
     <ClCompile Include="saytext.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="statusbar.cpp" />
     <ClCompile Include="status_icons.cpp" />
     <ClCompile Include="text_message.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="train.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>

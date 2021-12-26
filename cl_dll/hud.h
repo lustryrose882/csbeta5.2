@@ -43,6 +43,34 @@ typedef struct rect_s
 
 #define		HUDELEM_ACTIVE	1
 
+HSPRITE HUD_GetSprite( int index );
+wrect_t HUD_GetSpriteRect( int index );
+int HUD_GetSpriteIndexByName( const char *sz );
+
+class CClientSprite {
+public:
+	inline CClientSprite(const char *sprName)
+	{
+		SetSpriteByName(sprName);
+	}
+	inline CClientSprite()
+	{
+		spr = 0;
+		rect.bottom = rect.left = rect.right = rect.top = 0;
+	}
+
+	inline void SetSpriteByName( const char *sprName )
+	{
+		index = HUD_GetSpriteIndexByName(sprName);
+		spr	= HUD_GetSprite(index);
+		rect = HUD_GetSpriteRect(index);
+	}
+
+	int index;
+	HSPRITE spr;
+	wrect_t rect;
+};
+
 typedef struct {
 	int x, y;
 } POSITION;
@@ -100,6 +128,7 @@ public:
 	int MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ItemPickup( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_Crosshair(const char *pszName, int iSize, void *pbuf);
 
 	void _cdecl UserCmd_Slot1( void );
 	void _cdecl UserCmd_Slot2( void );
@@ -356,9 +385,17 @@ public:
 	int Init( void );
 	int VidInit( void );
 	int Draw(float flTime);
+	void InitHUDData( void );
 	int MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf );
-	
+	int MsgFunc_ArmorType(const char *pszName,  int iSize, void *pbuf );
 private:
+	enum armortype_t
+	{
+		Vest = 0,
+		VestHelm
+	} m_enArmorType;
+	CClientSprite m_hEmpty[VestHelm + 1];
+	CClientSprite m_hFull[VestHelm + 1];
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
 	wrect_t *m_prc1;
@@ -504,6 +541,63 @@ private:
 
 };
 
+//
+//-----------------------------------------------------
+//
+class CHudTimer: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float fTime);
+	int MsgFunc_RoundTime(const char *pszName, int iSize, void *pbuf);
+private:
+	int m_TimerIcon;
+	int m_Time;
+	float m_PlayTime;
+	bool m_PanicColorChange;
+	float m_PanicTime;
+};
+//
+//-----------------------------------------------------
+//
+class CHudProgressBar: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	int MsgFunc_BarTime(const char *pszName, int iSize, void *pbuf);
+private:
+	int m_iDuration;
+	float m_fPercent;
+	float m_fStartTime;
+};
+
+//
+//-----------------------------------------------------
+//
+#define MONEY_YPOS ScreenHeight - 3 * gHUD.m_iFontHeight
+
+class CHudMoney : public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	int MsgFunc_Money(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_BlinkAcct(const char *pszName, int iSize, void *pbuf);
+
+private:
+	int m_iMoneyCount;
+	int m_iDelta;
+	int m_iBlinkAmt;
+	float m_fBlinkTime;
+	float m_fFade;
+	CClientSprite m_hDollar;
+	CClientSprite m_hPlus;
+	CClientSprite m_hMinus;
+};
 
 //
 //-----------------------------------------------------
@@ -536,6 +630,7 @@ public:
 
 	int m_iFontHeight;
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b );
+	int DrawHudNumber2( int x, int y, bool DrawZero, int iDigits, int iNumber, int r, int g, int b );
 	int DrawHudString(int x, int y, int iMaxX, char *szString, int r, int g, int b );
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
@@ -578,6 +673,9 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+	CHudTimer m_Timer;
+	CHudProgressBar m_ProgressBar;
+	CHudMoney       m_Money;
 
 	void Init( void );
 	void VidInit( void );
@@ -596,6 +694,7 @@ public:
 	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf );
 	// Screen information
 	SCREENINFO	m_scrinfo;
 

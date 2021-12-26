@@ -43,3 +43,17 @@ HSPRITE LoadSprite(const char *pszName)
 	return SPR_Load(sz);
 }
 
+int HUD_GetSpriteIndexByName( const char *sz )
+{
+	return gHUD.GetSpriteIndex(sz);
+}
+
+HSPRITE HUD_GetSprite( int index )
+{
+	return gHUD.GetSprite(index);
+}
+
+wrect_t HUD_GetSpriteRect( int index )
+{
+	return gHUD.GetSpriteRect( index );
+}

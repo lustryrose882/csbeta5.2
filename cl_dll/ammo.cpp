@@ -230,6 +230,7 @@ HSPRITE ghsprBuckets;					// Sprite for top row of weapons menu
 DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
+DECLARE_MESSAGE(m_Ammo, Crosshair);
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
 DECLARE_MESSAGE(m_Ammo, WeapPickup);    // flashes a weapon pickup record
 DECLARE_MESSAGE(m_Ammo, HideWeapon);	// hides the weapon, ammo, and crosshair displays temporarily
@@ -255,6 +256,20 @@ DECLARE_COMMAND(m_Ammo, PrevWeapon);
 
 #define HISTORY_DRAW_TIME	"5"
 
+int CHud :: MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int v1 = READ_BYTE( );
+
+	if ( READ_BYTE( ) )
+		gEngfuncs.pfnPlaySoundByName( "weapon/generic_reload.wav", v1 / 255.0f );
+	else
+		gEngfuncs.pfnPlaySoundByName( "weapon/generic_shot_reload.wav", v1 / 255.0f );
+
+	return 1;
+}
+
 int CHudAmmo::Init(void)
 {
 	gHUD.AddHudElem(this);
@@ -266,6 +281,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(ItemPickup);
 	HOOK_MESSAGE(HideWeapon);
 	HOOK_MESSAGE(AmmoX);
+	HOOK_MESSAGE(Crosshair);
 
 	HOOK_COMMAND("slot1", Slot1);
 	HOOK_COMMAND("slot2", Slot2);
@@ -284,7 +300,8 @@ int CHudAmmo::Init(void)
 	Reset();
 
 	CVAR_CREATE( "hud_drawhistory_time", HISTORY_DRAW_TIME, 0 );
-	CVAR_CREATE( "hud_fastswitch", "0", FCVAR_ARCHIVE );		// controls whether or not weapons can be selected in one keypress
+	CVAR_CREATE( "hud_fastswitch", "1", FCVAR_ARCHIVE );		// controls whether or not weapons can be selected in one keypress
+	CVAR_CREATE( "cl_observercrosshair", "0", FCVAR_ARCHIVE );
 
 	m_iFlags |= HUD_ACTIVE; //!!!
 
@@ -535,6 +552,28 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 	{
 		if ( m_pWeapon )
 			SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+	}
+
+	return 1;
+}
+
+int CHudAmmo::MsgFunc_Crosshair(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	static wrect_t nullrc;
+	bool drawn = READ_BYTE();
+
+	if (gEngfuncs.pfnGetCvarFloat("cl_observercrosshair") == 0)
+		return 1;
+
+	if (drawn) // sprites/observer.txt
+	{
+		SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
+	}
+	else
+	{
+		SetCrosshair(0, nullrc, 0, 0, 0);
 	}
 
 	return 1;

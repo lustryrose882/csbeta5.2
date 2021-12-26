@@ -230,6 +230,24 @@ int CHud :: DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, 
 	return x;
 }
 
+int CHud::DrawHudNumber2( int x, int y, bool DrawZero, int iDigits, int iNumber, int r, int g, int b )
+{
+	int iWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
+	x += ( iDigits - 1 ) * iWidth;
+
+	int ResX = x + iWidth;
+	do
+	{
+		int k = iNumber % 10;
+		iNumber /= 10;
+		SPR_Set( gHUD.GetSprite( gHUD.m_HUD_number_0 + k ), r, g, b );
+		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( gHUD.m_HUD_number_0 + k ) );
+		x -= iWidth;
+		iDigits--;
+	} while ( iNumber > 0 || ( iDigits > 0 && DrawZero ) );
+
+	return ResX;
+}
 
 int CHud::GetNumWidth( int iNumber, int iFlags )
 {
@@ -256,5 +274,3 @@ int CHud::GetNumWidth( int iNumber, int iFlags )
 	return 3;
 
 }	
-
-
