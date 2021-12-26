@@ -129,7 +129,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\client.dll</OutputFile>
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
-      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
