@@ -315,8 +315,6 @@ typedef struct
 	short			flags;
 } TYPEDESCRIPTION;
 
-#define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
-
 typedef struct 
 {
 	void			(*pfnGameInit)			( void );				// Initialize the game (one-time call from Host_Init() )

@@ -21,12 +21,12 @@
 #include "STDIO.H"
 #include "STDLIB.H"
 #include "MATH.H"
+#include <string.h>
 
 #include "hud.h"
 #include "util.h"
-#include <string.h>
 
-
+#define _CRT_SECURE_NO_WARNINGS
 
 HSPRITE LoadSprite(const char *pszName)
 {

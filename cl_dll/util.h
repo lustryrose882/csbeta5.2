@@ -16,8 +16,6 @@
 // util.h
 //
 
-#include <windows.h>
-
 #include "../engine/cvardef.h"
 
 // Macros to hook function calls into the HUD object
