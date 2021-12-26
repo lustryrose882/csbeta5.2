@@ -24,6 +24,9 @@
 #include <string.h>
 #include <stdio.h>
 
+int menu_r, menu_g, menu_b, menu_x;
+int menu_ralign;
+
 #define MAX_MENU_STRING	512
 char g_szMenuString[MAX_MENU_STRING];
 char g_szPrelocalisedMenuString[MAX_MENU_STRING];
@@ -62,45 +65,101 @@ int CHudMenu :: VidInit( void )
 int CHudMenu :: Draw( float flTime )
 {
 	// check for if menu is set to disappear
-	if ( m_flShutoffTime > 0 )
+	if (m_flShutoffTime > 0)
 	{
-		if ( m_flShutoffTime <= gHUD.m_flTime )
-		{  // times up, shutoff
+		if (m_flShutoffTime <= gHUD.m_flTime)
+		{
 			m_fMenuDisplayed = 0;
 			m_iFlags &= ~HUD_ACTIVE;
 			return 1;
 		}
 	}
 
-	// don't draw the menu if the scoreboard is being shown
-	if ( gHUD.m_Scoreboard.m_iShowscoresHeld )
-		return 1;
-
-	// draw the menu, along the left-hand side of the screen
-
-	// count the number of newlines
 	int nlc = 0;
-	int i;
-	for ( i = 0; i < MAX_MENU_STRING && g_szMenuString[i] != '\0'; i++ )
+
+	for (int i = 0; i < MAX_MENU_STRING && g_szMenuString[i] != '\0'; i++)
 	{
-		if ( g_szMenuString[i] == '\n' )
+		if (g_szMenuString[i] == '\n')
 			nlc++;
 	}
+	
+	menu_x = 20; menu_r = 255; menu_g = 255; menu_b = 20;
+	menu_ralign = 0;
 
-	// center it
-	int y = (ScreenHeight/2) - ((nlc/2)*12) - 40; // make sure it is above the say text
-	int x = 20;
+	int y = (ScreenHeight / 2) - ((nlc / 2) * 12) - 40;
+	const char *sptr = g_szMenuString;
+	int i;
+	char menubuf[80];
+	const char *ptr;
 
-	i = 0;
-	while ( i < MAX_MENU_STRING && g_szMenuString[i] != '\0' )
-	{
-		gHUD.DrawHudString( x, y, 320, g_szMenuString + i, 255, 255, 255 );
-		y += 12;
+	while (*sptr){
 
-		while ( i < MAX_MENU_STRING && g_szMenuString[i] != '\0' && g_szMenuString[i] != '\n' )
-			i++;
-		if ( g_szMenuString[i] == '\n' )
-			i++;
+		if (*sptr == '\\'){
+
+			switch (*(sptr + 1)){
+
+				case '\0':{
+					sptr += 1;
+					break;
+				}
+				case 'w':{
+					menu_r = 255; menu_g = 255; menu_b = 255;
+					sptr += 2;
+					break;
+				}
+				case 'd':{
+					menu_r = 100; menu_g = 100; menu_b = 100;
+					sptr += 2;
+					break;
+				}
+				case 'y':{
+					menu_r = 255; menu_g = 210; menu_b = 64;
+					sptr += 2;
+					break;
+				}
+				case 'r':{
+					menu_r = 210; menu_g = 24; menu_b = 0;
+					sptr += 2;
+					break;
+				}
+				case 'R':{
+					menu_ralign = 1; menu_x = ScreenWidth / 2;
+					sptr += 2;
+					break;
+				}
+				default:{
+					sptr += 2;
+				}
+			}
+			continue;
+		}
+
+		if (*sptr == '\n')
+		{
+			menu_ralign = 0;
+			menu_x = 20;
+			y += gHUD.m_iFontHeight + 2;
+			sptr += 1;
+			continue;
+		}
+
+		for (ptr = sptr; *sptr != '\0'; sptr++)
+		{
+			if (*sptr == '\n')
+				break;
+
+			if (*sptr == '\\')
+				break;
+		}
+
+		i = sptr - ptr;
+		strncpy(menubuf, ptr, min(i, sizeof(menubuf)));
+		menubuf[min(i, sizeof(menubuf) - 1)] = 0;
+
+		if (menu_ralign)
+			menu_x = gHUD.DrawHudStringReverse(menu_x, y, 0, menubuf, menu_r, menu_g, menu_b);
+		else
+			menu_x = gHUD.DrawHudString(menu_x, y, 320, menubuf, menu_r, menu_g, menu_b);
 	}
 	
 	return 1;
