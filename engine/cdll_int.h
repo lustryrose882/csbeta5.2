@@ -171,15 +171,6 @@ typedef struct cl_enginefuncs_s
 #define IN_ALT1		(1 << 14)
 #define IN_ALT2		(1 << 15)
 
-
 #define CLDLL_INTERFACE_VERSION		6
-
-extern void ClientDLL_Init( void ); // from cdll_int.c
-extern void ClientDLL_Shutdown( void );
-extern void ClientDLL_HudInit( void );
-extern void ClientDLL_HudVidInit( void );
-extern void	ClientDLL_UpdateClientData( void );
-extern void ClientDLL_HudRedraw( int intermission );
-
 
 #endif // CDLL_INT_H

@@ -31,7 +31,6 @@ void BEGIN_READ( void *buf, int size )
 	gpBuf = (byte*)buf;
 }
 
-
 int READ_CHAR( void )
 {
 	int     c;

@@ -27,7 +27,6 @@
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 
-
 /*
 ========================== 
     Initialize
@@ -37,12 +36,12 @@ Called when the DLL is first loaded.
 */
 extern "C" 
 {
-int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion );
-int DLLEXPORT HUD_VidInit( void );
-int DLLEXPORT HUD_Init( void );
-int DLLEXPORT HUD_Redraw( float flTime, int intermission );
-int DLLEXPORT HUD_UpdateClientData( client_data_t *cdata, float flTime );
-int DLLEXPORT HUD_Reset ( void );
+	int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion );
+	int DLLEXPORT HUD_VidInit( void );
+	int DLLEXPORT HUD_Init( void );
+	int DLLEXPORT HUD_Redraw( float flTime, int intermission );
+	int DLLEXPORT HUD_UpdateClientData( client_data_t *cdata, float flTime );
+	int DLLEXPORT HUD_Reset ( void );
 }
 
 

@@ -25,7 +25,8 @@
 
 DECLARE_MESSAGE( m_DeathNotice, DeathMsg );
 
-struct DeathNoticeItem {
+struct DeathNoticeItem
+{
 	char szKiller[MAX_PLAYER_NAME_LENGTH];
 	char szVictim[MAX_PLAYER_NAME_LENGTH];
 	int iId;	// the index number of the associated sprite
@@ -41,7 +42,6 @@ static int DEATHNOTICE_DISPLAY_TIME = 6;
 
 DeathNoticeItem rgDeathNoticeList[ MAX_DEATHNOTICES + 1 ];
 
-
 int CHudDeathNotice :: Init( void )
 {
 	gHUD.AddHudElem( this );
@@ -53,12 +53,10 @@ int CHudDeathNotice :: Init( void )
 	return 1;
 }
 
-
 void CHudDeathNotice :: InitHUDData( void )
 {
 	memset( rgDeathNoticeList, 0, sizeof(rgDeathNoticeList) );
 }
-
 
 int CHudDeathNotice :: VidInit( void )
 {

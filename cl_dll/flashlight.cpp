@@ -26,7 +26,6 @@
 #include <stdio.h>
 
 
-
 DECLARE_MESSAGE(m_Flash, FlashBat)
 DECLARE_MESSAGE(m_Flash, Flashlight)
 
