@@ -409,66 +409,11 @@ int CHudScoreboard :: MsgFunc_TeamInfo( const char *pszName, int iSize, void *pb
 {
 	BEGIN_READ( pbuf, iSize );
 	short cl = READ_BYTE();
-	
-	if ( cl > 0 && cl <= MAX_PLAYERS )
-	{  // set the players team
-		strncpy( m_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME );
-	}
+	short cl2 = READ_BYTE();
 
-	// rebuild the list of teams
-	int i;
-	// clear out player counts from teams
-	for ( i = 1; i <= m_iNumTeams; i++ )
-	{
-		m_TeamInfo[i].players = 0;
-	}
-
-	// rebuild the team list
-	GetAllPlayersInfo();
-	m_iNumTeams = 0;
-	for ( i = 1; i < MAX_PLAYERS; i++ )
-	{
-		int j;
-		if ( m_PlayerInfoList[i].name == NULL )
-			continue;
-
-		if ( m_PlayerExtraInfo[i].teamname[0] == 0 )
-			continue; // skip over players who are not in a team
-
-		// is this player in an existing team?
-		for ( j = 1; j <= m_iNumTeams; j++ )
-		{
-			if ( m_TeamInfo[j].name[0] == '\0' )
-				break;
-
-			if ( !stricmp( m_PlayerExtraInfo[i].teamname, m_TeamInfo[j].name ) )
-				break;
-		}
-
-		if ( j > m_iNumTeams )
-		{ // they aren't in a listed team, so make a new one
-			// search through for an empty team slot
-			for ( int j = 1; j <= m_iNumTeams; j++ )
-			{
-				if ( m_TeamInfo[j].name[0] == '\0' )
-					break;
-			}
-			m_iNumTeams = max( j, m_iNumTeams );
-
-			strncpy( m_TeamInfo[j].name, m_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME );
-			m_TeamInfo[j].players = 0;
-		}
-
-		m_TeamInfo[j].players++;
-	}
-
-	// clear out any empty teams
-	for ( i = 1; i <= m_iNumTeams; i++ )
-	{
-		if ( m_TeamInfo[i].players < 1 )
-			memset( &m_TeamInfo[i], 0, sizeof(team_info_t) );
-	}
-
+	static char BTW[256];
+	sprintf( BTW, "TeamInfo: %d,%d \n", cl, cl2 );
+	gEngfuncs.pfnConsolePrint(BTW);
 	return 1;
 }
 
@@ -481,22 +426,12 @@ int CHudScoreboard :: MsgFunc_TeamInfo( const char *pszName, int iSize, void *pb
 int CHudScoreboard :: MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
-	char *TeamName = READ_STRING();
-	int i;
-	// find the team matching the name
-	for ( i = 1; i <= m_iNumTeams; i++ )
-	{
-		if ( !stricmp( TeamName, m_TeamInfo[i].name ) )
-			break;
-	}
-	if ( i > m_iNumTeams )
-		return 1;
+	int LOL = READ_BYTE();
+	short DEATH = READ_SHORT();
 
-	// use this new score data instead of combined player scores
-	m_TeamInfo[i].scores_overriden = TRUE;
-	m_TeamInfo[i].frags = READ_SHORT();
-	m_TeamInfo[i].deaths = READ_SHORT();
-	
+	static char BTW[256];
+	sprintf( BTW, "TeamScore: %d,%d \n", LOL, DEATH );
+	gEngfuncs.pfnConsolePrint(BTW);
 	return 1;
 }
 
