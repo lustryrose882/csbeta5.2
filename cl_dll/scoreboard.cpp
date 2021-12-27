@@ -94,7 +94,6 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 15
 #define ROW_RANGE_MAX ( ScreenHeight - 50 )
-
 int CHudScoreboard :: Draw( float fTime )
 {
 	if ( !m_iShowscoresHeld && gHUD.m_Health.m_iHealth > 0 && !gHUD.m_iIntermission )
@@ -404,16 +403,84 @@ int CHudScoreboard :: MsgFunc_ScoreInfo( const char *pszName, int iSize, void *p
 // Message handler for TeamInfo message
 // accepts two values:
 //		byte: client number
-//		string: client team name
+//		byte: client team number
 int CHudScoreboard :: MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
-	short cl = READ_BYTE();
-	short cl2 = READ_BYTE();
 
-	static char BTW[256];
-	sprintf( BTW, "TeamInfo: %d,%d \n", cl, cl2 );
-	gEngfuncs.pfnConsolePrint(BTW);
+	short clindex = READ_BYTE();
+	short teamnumber = READ_BYTE();
+
+	if ( clindex > 0 && clindex <= MAX_PLAYERS )
+	{
+		m_PlayerExtraInfo[clindex].teamnumber = teamnumber;
+
+		if(teamnumber == TEAM_TERRORIST)
+			strncpy( m_PlayerExtraInfo[clindex].teamname, "TERRORIST", MAX_TEAM_NAME );
+		else if(teamnumber == TEAM_CT)
+			strncpy( m_PlayerExtraInfo[clindex].teamname, "CT", MAX_TEAM_NAME );
+		else
+			strncpy( m_PlayerExtraInfo[clindex].teamname, "SPECTATOR", MAX_TEAM_NAME );
+	}
+
+	// rebuild the list of teams
+
+	// clear out player counts from teams
+	for ( int i = 1; i <= m_iNumTeams; i++ )
+	{
+		m_TeamInfo[i].players = 0;
+	}
+
+	// rebuild the team list
+	GetAllPlayersInfo();
+	m_iNumTeams = 0;
+
+
+	for ( int i = 1; i < MAX_PLAYERS; i++ )
+	{
+		int j;
+		//if ( g_PlayerInfoList[i].name == NULL )
+		//	continue;
+
+		if ( m_PlayerExtraInfo[i].teamname[0] == 0 )
+			continue; // skip over players who are not in a team
+
+		// is this player in an existing team?
+		for ( j = 1; j <= m_iNumTeams; j++ )
+		{
+			if ( m_TeamInfo[j].name[0] == '\0' )
+				break;
+
+			if ( !stricmp( m_PlayerExtraInfo[i].teamname, m_TeamInfo[j].name ) )
+				break;
+		}
+
+		if ( j > m_iNumTeams )
+		{
+			// they aren't in a listed team, so make a new one
+			for ( j = 1; j <= m_iNumTeams; j++ )
+			{
+				if ( m_TeamInfo[j].name[0] == '\0' )
+					break;
+			}
+
+
+			m_iNumTeams = max( j, m_iNumTeams );
+
+			strncpy( m_TeamInfo[j].name, m_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME );
+			m_TeamInfo[j].teamnumber = m_PlayerExtraInfo[i].teamnumber;
+			m_TeamInfo[j].players = 0;
+		}
+
+		m_TeamInfo[j].players++;
+	}
+
+	// clear out any empty teams
+	for ( int i = 1; i <= m_iNumTeams; i++ )
+	{
+		if ( m_TeamInfo[i].players < 1 )
+			memset( &m_TeamInfo[i], 0, sizeof(team_info_t) );
+	}
 	return 1;
 }
 

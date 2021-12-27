@@ -309,9 +309,17 @@ public:
 		MAX_TEAM_NAME = 16,
 	};
 
+	enum {
+		TEAM_UNASSIGNED = 0,
+		TEAM_TERRORIST = 1,
+		TEAM_CT = 2,
+		TEAM_SPECTATOR = 3,
+	};
+
 	struct extra_player_info_t {
 		short frags;
 		short deaths;
+		int teamnumber;
 		char teamname[MAX_TEAM_NAME];
 	};
 
@@ -323,6 +331,8 @@ public:
 		short packetloss;
 		short ownteam;
 		short players;
+		short teamnumber;
+		char teamname[MAX_TEAM_NAME];
 		int already_drawn;
 		int scores_overriden;
 	};
