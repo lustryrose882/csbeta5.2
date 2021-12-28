@@ -124,12 +124,6 @@ int CHudScoreboard :: Draw( float fTime )
 	
 	list_slot += 0.8;
 
-	if ( !gHUD.m_Teamplay )
-	{
-		// it's not teamplay,  so just draw a simple player list
-		DrawPlayers( xpos_rel, list_slot );
-		return 1;
-	}
 	int i;
 	// clear out team scores
 	for ( i = 1; i <= m_iNumTeams; i++ )
@@ -416,11 +410,11 @@ int CHudScoreboard :: MsgFunc_TeamInfo( const char *pszName, int iSize, void *pb
 		m_PlayerExtraInfo[clindex].teamnumber = teamnumber;
 
 		if(teamnumber == TEAM_TERRORIST)
-			strncpy( m_PlayerExtraInfo[clindex].teamname, "TERRORIST", MAX_TEAM_NAME );
+			strncpy( m_PlayerExtraInfo[clindex].teamname, "Terrorist", MAX_TEAM_NAME );
 		else if(teamnumber == TEAM_CT)
-			strncpy( m_PlayerExtraInfo[clindex].teamname, "CT", MAX_TEAM_NAME );
+			strncpy( m_PlayerExtraInfo[clindex].teamname, "Counter-Terrorist", MAX_TEAM_NAME );
 		else
-			strncpy( m_PlayerExtraInfo[clindex].teamname, "SPECTATOR", MAX_TEAM_NAME );
+			strncpy( m_PlayerExtraInfo[clindex].teamname, "Observer", MAX_TEAM_NAME );
 	}
 
 	// rebuild the list of teams
