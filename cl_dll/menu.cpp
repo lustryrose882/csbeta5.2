@@ -138,7 +138,7 @@ int CHudMenu :: Draw( float flTime )
 		{
 			menu_ralign = 0;
 			menu_x = 20;
-			y += gHUD.m_iFontHeight + 2;
+			y += 15;
 			sptr += 1;
 			continue;
 		}
