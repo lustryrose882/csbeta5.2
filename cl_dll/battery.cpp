@@ -35,7 +35,7 @@ int CHudBattery::Init(void)
 	m_iFlags = 0;
 	m_enArmorType = Vest;
 
-	HOOK_MESSAGE(Battery);
+	HOOK_MESSAGE( Battery );
 	HOOK_MESSAGE( ArmorType );
 
 	gHUD.AddHudElem(this);

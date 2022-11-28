@@ -29,7 +29,7 @@ DECLARE_MESSAGE( m_MOTD, MOTD );
 
 int CHudMOTD::MOTD_DISPLAY_TIME;
 
-int CHudMOTD :: Init( void )
+int CHudMOTD::Init( void )
 {
 	gHUD.AddHudElem( this );
 
@@ -43,14 +43,14 @@ int CHudMOTD :: Init( void )
 	return 1;
 }
 
-int CHudMOTD :: VidInit( void )
+int CHudMOTD::VidInit( void )
 {
 	// Load sprites here
 
 	return 1;
 }
 
-void CHudMOTD :: Reset( void )
+void CHudMOTD::Reset( void )
 {
 	m_iFlags &= ~HUD_ACTIVE;  // start out inactive
 	m_szMOTD[0] = 0;
@@ -60,7 +60,7 @@ void CHudMOTD :: Reset( void )
 
 #define LINE_HEIGHT  13
 
-int CHudMOTD :: Draw( float fTime )
+int CHudMOTD::Draw( float fTime )
 {
 	// Draw MOTD line-by-line
 
@@ -110,7 +110,7 @@ int CHudMOTD :: Draw( float fTime )
 	return 1;
 }
 
-int CHudMOTD :: MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
+int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 {
 	if ( m_iFlags & HUD_ACTIVE )
 	{

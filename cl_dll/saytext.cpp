@@ -40,12 +40,14 @@ static int Y_START = 0;
 static int line_height = 0;
 
 DECLARE_MESSAGE( m_SayText, SayText );
+DECLARE_MESSAGE( m_SayText, SendAudio );
 
-int CHudSayText :: Init( void )
+int CHudSayText::Init( void )
 {
 	gHUD.AddHudElem( this );
 
 	HOOK_MESSAGE( SayText );
+	HOOK_MESSAGE( SendAudio );
 
 	InitHUDData();
 
@@ -54,17 +56,15 @@ int CHudSayText :: Init( void )
 	return 1;
 }
 
-
-void CHudSayText :: InitHUDData( void )
+void CHudSayText::InitHUDData( void )
 {
 	memset( g_szLineBuffer, 0, sizeof g_szLineBuffer );
 }
 
-int CHudSayText :: VidInit( void )
+int CHudSayText::VidInit( void )
 {
 	return 1;
 }
-
 
 void ScrollTextUp( void )
 {
@@ -78,7 +78,7 @@ void ScrollTextUp( void )
 	}
 }
 
-int CHudSayText :: Draw( float flTime )
+int CHudSayText::Draw( float flTime )
 {
 	int y = Y_START;
 
@@ -114,17 +114,33 @@ int CHudSayText :: Draw( float flTime )
 	return 1;
 }
 
-int CHudSayText :: MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
+int CHudSayText::MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
-	int client_index = READ_BYTE();		// the client who spoke the message
-	SayTextPrint( READ_STRING(), iSize - 1 );
-	
+	int client_index = READ_BYTE(); // Noone uses that
+
+	char* pMessage = READ_STRING();
+
+	SayTextPrint( pMessage, iSize - 1 );
+
 	return 1;
 }
 
-void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize )
+int CHudSayText::MsgFunc_SendAudio(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ( pbuf, iSize );
+
+	READ_BYTE( ); // Probably unused
+
+	char *sentence = READ_STRING( );
+
+	FindAudMessage(sentence /*, iSize -1-*/);
+
+	return 1;
+}
+
+void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize )
 {
 	int i;
 	// find an empty string slot
@@ -153,7 +169,6 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize )
 	}
 
 	m_iFlags |= HUD_ACTIVE;
-	PlaySound( "misc/talk.wav", 1 );
 
 	if ( ScreenHeight >= 480 )
 		Y_START = ScreenHeight - 45;
@@ -163,7 +178,7 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize )
 
 }
 
-void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
+void CHudSayText::EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 {
 	int line_width = 0;
 	GetConsoleStringSize( g_szLineBuffer[line], &line_width, &line_height );
@@ -228,5 +243,36 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 				break;
 			}
 		}
+	}
+}
+
+void CHudSayText::FindAudMessage( char *pStr )
+{
+	char szName[64];
+	sprintf(szName, "misc/talk.wav");
+
+	char *pName = szName;
+	char *pHasNetCode = strstr(pStr, "%!");
+
+	if (pHasNetCode)
+	{
+		{
+			pHasNetCode++;
+
+			while (*pHasNetCode)
+			{
+				if (*pHasNetCode <= ' ' || *pHasNetCode > 'z')
+					break;
+
+				*pName++ = *pHasNetCode++;
+			}
+			*pName = '\0';
+		}
+
+		gEngfuncs.pfnPlaySoundByName(szName, 1.0);
+	}
+	else
+	{
+		gEngfuncs.pfnPlaySoundByName(pStr, 1.0);
 	}
 }

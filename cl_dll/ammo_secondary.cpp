@@ -27,7 +27,7 @@
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal );
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon );
 
-int CHudAmmoSecondary :: Init( void )
+int CHudAmmoSecondary::Init( void )
 {
 	HOOK_MESSAGE( SecAmmoVal );
 	HOOK_MESSAGE( SecAmmoIcon );
@@ -43,17 +43,17 @@ int CHudAmmoSecondary :: Init( void )
 	return 1;
 }
 
-void CHudAmmoSecondary :: Reset( void )
+void CHudAmmoSecondary::Reset( void )
 {
 	m_fFade = 0;
 }
 
-int CHudAmmoSecondary :: VidInit( void )
+int CHudAmmoSecondary::VidInit( void )
 {
 	return 1;
 }
 
-int CHudAmmoSecondary :: Draw(float flTime)
+int CHudAmmoSecondary::Draw(float flTime)
 {
 	if ( (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )
 		return 1;
@@ -113,7 +113,7 @@ int CHudAmmoSecondary :: Draw(float flTime)
 // Message handler for Secondary Ammo Value
 // accepts one value:
 //		string:  sprite name
-int CHudAmmoSecondary :: MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf )
+int CHudAmmoSecondary::MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 	m_HUD_ammoicon = gHUD.GetSpriteIndex( READ_STRING() );
@@ -126,7 +126,7 @@ int CHudAmmoSecondary :: MsgFunc_SecAmmoIcon( const char *pszName, int iSize, vo
 // takes two values:
 //		byte:  ammo index
 //		byte:  ammo value
-int CHudAmmoSecondary :: MsgFunc_SecAmmoVal( const char *pszName, int iSize, void *pbuf )
+int CHudAmmoSecondary::MsgFunc_SecAmmoVal( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 

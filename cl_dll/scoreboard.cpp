@@ -29,10 +29,11 @@ DECLARE_COMMAND( m_Scoreboard, ShowScores );
 DECLARE_COMMAND( m_Scoreboard, HideScores );
 
 DECLARE_MESSAGE( m_Scoreboard, ScoreInfo );
+DECLARE_MESSAGE( m_Scoreboard, ScoreAttrib );
 DECLARE_MESSAGE( m_Scoreboard, TeamInfo );
 DECLARE_MESSAGE( m_Scoreboard, TeamScore );
 
-int CHudScoreboard :: Init( void )
+int CHudScoreboard::Init( void )
 {
 	gHUD.AddHudElem( this );
 
@@ -40,24 +41,34 @@ int CHudScoreboard :: Init( void )
 	HOOK_COMMAND( "+showscores", ShowScores );
 	HOOK_COMMAND( "-showscores", HideScores );
 
+	HOOK_MESSAGE( ScoreAttrib );
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
+
+	/*
+	push 0
+	push offset a1       ; "1"
+	push offset aClHidefrags ; "cl_hidefrags"
+	*/
+	CVAR_CREATE("cl_hidefrags", "1", 0);
 
 	InitHUDData();
 
 	return 1;
 }
 
-
-int CHudScoreboard :: VidInit( void )
+int CHudScoreboard::VidInit( void )
 {
 	// Load sprites here
+	m_Score_Skull = gHUD.GetSpriteIndex("smallskull");
+	m_Score_C4 = gHUD.GetSpriteIndex("smallc4");
+
 
 	return 1;
 }
 
-void CHudScoreboard :: InitHUDData( void )
+void CHudScoreboard::InitHUDData( void )
 {
 	memset( m_PlayerExtraInfo, 0, sizeof m_PlayerExtraInfo );
 	m_iLastKilledBy = 0;
@@ -88,13 +99,13 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 #define PING_RANGE_MAX	295
 
 #define SCOREBOARD_WIDTH 320
-		
 
 // Y positions
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 15
 #define ROW_RANGE_MAX ( ScreenHeight - 50 )
-int CHudScoreboard :: Draw( float fTime )
+
+int CHudScoreboard::Draw( float fTime )
 {
 	if ( !m_iShowscoresHeld && gHUD.m_Health.m_iHealth > 0 && !gHUD.m_iIntermission )
 		return 1;
@@ -225,17 +236,12 @@ int CHudScoreboard :: Draw( float fTime )
 		// draw their name (left to right)
 		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
 
-		// draw kills (right to left)
+		// mmm
 		xpos = KILLS_RANGE_MAX + xpos_rel;
 		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, team_info->frags, r, g, b );
 
-		// draw divider
-		xpos = DIVIDER_POS + xpos_rel;
-		gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
-
-		// draw deaths
-		xpos = DEATHS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, team_info->deaths, r, g, b );
+		xpos = DIVIDER_POS + xpos_rel; // 26 per char
+		gHUD.DrawHudString( xpos, ypos, xpos + 104, "wins", r, g, b );
 
 		// draw ping
 		// draw ping & packetloss
@@ -265,7 +271,7 @@ int CHudScoreboard :: Draw( float fTime )
 }
 
 // returns the ypos where it finishes drawing
-int CHudScoreboard :: DrawPlayers( int xpos_rel, float list_slot, int nameoffset, char *team )
+int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, char *team )
 {
 	// draw the players, in order,  and restricted to team if set
 	while ( 1 )
@@ -322,8 +328,27 @@ int CHudScoreboard :: DrawPlayers( int xpos_rel, float list_slot, int nameoffset
 			FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, PING_RANGE_MAX - 5, ROW_GAP, 0, 0, 255, 70 );
 		}
 
+		//probably should be here
+		int sr, sg, sb;
+
+		if(m_PlayerExtraInfo[best_player].died) // My theories never fail me
+		{		
+			UnpackRGB(sr, sg, sb, RGB_REDISH);
+			SPR_Set( gHUD.GetSprite(m_Score_Skull), sr, sg, sb);
+			SPR_DrawAdditive(0, xpos - NAME_RANGE_MIN, ypos, &gHUD.GetSpriteRect(m_Score_Skull));
+		}
+		else if(m_PlayerExtraInfo[best_player].have_c4) // I failed at high school on science but i am a scientist now
+		{
+			UnpackRGB(sr, sg, sb, RGB_GREENISH); // it shows all green offsets as yellow for some reason
+			SPR_Set( gHUD.GetSprite(m_Score_C4), sr, sg, sb);
+			SPR_DrawAdditive(0, xpos - NAME_RANGE_MIN, ypos, &gHUD.GetSpriteRect(m_Score_C4));
+		}
+
 		// draw their name (left to right)
 		gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
+
+		if(CVAR_GET_FLOAT("cl_hidefrags") && !m_TeamInfo[best_player].ownteam)
+			goto Skipthis;
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
@@ -332,30 +357,17 @@ int CHudScoreboard :: DrawPlayers( int xpos_rel, float list_slot, int nameoffset
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
 		gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
-
+	
 		// draw deaths
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
 		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].deaths, r, g, b );
 
+		Skipthis:
 		// draw ping & packetloss
 		static char buf[64];
 		sprintf( buf, "%d", m_PlayerInfoList[best_player].ping );
 		xpos = ((PING_RANGE_MAX - PING_RANGE_MIN) / 2) + PING_RANGE_MIN + xpos_rel + 25;
 		gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
-
-	/*  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
-		if ( m_PlayerInfoList[best_player].packetloss >= 63 )
-		{
-			UnpackRGB( r, g, b, RGB_REDISH );
-			sprintf( buf, " !!!!" );
-		}
-		else
-		{
-			sprintf( buf, " %d", m_PlayerInfoList[best_player].packetloss );
-		}
-
-		gHUD.DrawHudString( xpos, ypos, xpos+50, buf, r, g, b );
-	*/
 
 		pl_info->name = NULL;  // set the name to be NULL, so this client won't get drawn again
 		list_slot++;
@@ -364,8 +376,7 @@ int CHudScoreboard :: DrawPlayers( int xpos_rel, float list_slot, int nameoffset
 	return list_slot;
 }
 
-
-void CHudScoreboard :: GetAllPlayersInfo( void )
+void CHudScoreboard::GetAllPlayersInfo( void )
 {
 	for ( int i = 1; i < MAX_PLAYERS; i++ )
 	{
@@ -376,12 +387,12 @@ void CHudScoreboard :: GetAllPlayersInfo( void )
 	}
 }
 
-int CHudScoreboard :: MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
+int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
 {
 	m_iFlags |= HUD_ACTIVE;
 
 	BEGIN_READ( pbuf, iSize );
-	short cl = READ_BYTE();
+	int cl = READ_BYTE();
 	short frags = READ_SHORT();
 	short deaths = READ_SHORT();
 
@@ -394,41 +405,60 @@ int CHudScoreboard :: MsgFunc_ScoreInfo( const char *pszName, int iSize, void *p
 	return 1;
 }
 
+int CHudScoreboard::MsgFunc_ScoreAttrib( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+	int unk1 = READ_BYTE(); // ClientIndex
+	int unk2 = READ_BYTE(); // ??? (Bomb flag or smth)
+
+/*
+.text:1000A410                 mov     [esi+edi*8+28h], dl
+.text:1000A414                 mov     [esi+ecx*4+634h], eax
+*/
+
+	m_PlayerExtraInfo[unk1].died = (unk2 == 1);
+	m_PlayerExtraInfo[unk1].have_c4 = (unk2 == 2);
+	return 1;
+}
+
 // Message handler for TeamInfo message
 // accepts two values:
 //		byte: client number
 //		byte: client team number
-int CHudScoreboard :: MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf )
+int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
-	short clindex = READ_BYTE();
-	short teamnumber = READ_BYTE();
+	int clientindex = READ_BYTE();
+	int teamnumber = READ_BYTE();
 
-	if ( clindex > 0 && clindex <= MAX_PLAYERS )
+	if ( clientindex > 0 && clientindex <= MAX_PLAYERS )
 	{
-		m_PlayerExtraInfo[clindex].teamnumber = teamnumber;
+		m_PlayerExtraInfo[clientindex].teamnumber = teamnumber;
 
-		if(teamnumber == TEAM_TERRORIST)
-			strncpy( m_PlayerExtraInfo[clindex].teamname, "Terrorist", MAX_TEAM_NAME );
-		else if(teamnumber == TEAM_CT)
-			strncpy( m_PlayerExtraInfo[clindex].teamname, "Counter-Terrorist", MAX_TEAM_NAME );
-		else
-			strncpy( m_PlayerExtraInfo[clindex].teamname, "Observer", MAX_TEAM_NAME );
+		switch(teamnumber)
+		{
+			case TEAM_TERRORIST:
+				strncpy( m_PlayerExtraInfo[clientindex].teamname, "Terrorist", MAX_TEAM_NAME );
+				break;
+			case TEAM_CT:
+				strncpy( m_PlayerExtraInfo[clientindex].teamname, "Counter-Terrorist", MAX_TEAM_NAME );
+				break;
+			default:
+				strncpy( m_PlayerExtraInfo[clientindex].teamname, "Observer", MAX_TEAM_NAME );
+				break;
+		}
 	}
 
 	// rebuild the list of teams
 
 	// clear out player counts from teams
 	for ( int i = 1; i <= m_iNumTeams; i++ )
-	{
 		m_TeamInfo[i].players = 0;
-	}
 
 	// rebuild the team list
 	GetAllPlayersInfo();
 	m_iNumTeams = 0;
-
 
 	for ( int i = 1; i < MAX_PLAYERS; i++ )
 	{
@@ -484,19 +514,50 @@ int CHudScoreboard :: MsgFunc_TeamInfo( const char *pszName, int iSize, void *pb
 //		short: teams kills
 //		short: teams deaths 
 // if this message is never received, then scores will simply be the combined totals of the players.
-int CHudScoreboard :: MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
+int CHudScoreboard::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
-	int LOL = READ_BYTE();
-	short DEATH = READ_SHORT();
 
-	static char BTW[256];
-	sprintf( BTW, "TeamScore: %d,%d \n", LOL, DEATH );
-	gEngfuncs.pfnConsolePrint(BTW);
+	int m_iTeamNumber = READ_BYTE();
+	short unk2 = READ_SHORT(); // Win count?
+	short unk3 = READ_SHORT();
+
+// I really dont know how true it's
+/*
+.text:1000A54D                 call    BEGIN_READ
+.text:1000A552                 add     esp, 8
+.text:1000A555                 call    READ_BYTE
+.text:1000A55A                 cmp     ax, 3
+.text:1000A55E                 jl      short loc_1000A562
+.text:1000A560                 xor     eax, eax
+.text:1000A562
+.text:1000A562 loc_1000A562:                           ; CODE XREF: unknown_libname_3+B3E↑j
+.text:1000A562                 movsx   eax, ax
+.text:1000A565                 lea     edx, [eax+eax*4]
+.text:1000A568                 lea     esi, [esi+edx*4]
+.text:1000A56B                 call    READ_SHORT
+.text:1000A570                 mov     [esi+94Eh], ax
+.text:1000A577                 call    READ_SHORT
+.text:1000A57C                 mov     [esi+950h], ax
+.text:1000A583                 mov     eax, 1
+.text:1000A588                 pop     esi
+.text:1000A589                 retn    0Ch
+*/
+
+	int j;
+	for ( j = 1; j <= m_iNumTeams; j++ )
+	{
+		if ( m_iTeamNumber == m_TeamInfo[j].teamnumber )
+			break;
+	}
+
+	m_TeamInfo[j].scores_overriden = 1;
+	m_TeamInfo[j].frags = unk2;
+	//m_TeamInfo[j].deaths = unk3;
 	return 1;
 }
 
-void CHudScoreboard :: DeathMsg( int killer, int victim )
+void CHudScoreboard::DeathMsg( int killer, int victim )
 {
 	// if we were the one killed,  or the world killed us, set the scoreboard to indicate suicide
 	if ( victim == m_iPlayerNum || killer == 0 )
@@ -509,14 +570,12 @@ void CHudScoreboard :: DeathMsg( int killer, int victim )
 	}
 }
 
-
-
-void CHudScoreboard :: UserCmd_ShowScores( void )
+void CHudScoreboard::UserCmd_ShowScores( void )
 {
 	m_iShowscoresHeld = TRUE;
 }
 
-void CHudScoreboard :: UserCmd_HideScores( void )
+void CHudScoreboard::UserCmd_HideScores( void )
 {
 	m_iShowscoresHeld = FALSE;
 }

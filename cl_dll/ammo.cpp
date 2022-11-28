@@ -35,7 +35,7 @@ client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes
 
 WeaponsResource gWR;
 
-void WeaponsResource :: LoadAllWeaponSprites( void )
+void WeaponsResource::LoadAllWeaponSprites( void )
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
@@ -44,7 +44,7 @@ void WeaponsResource :: LoadAllWeaponSprites( void )
 	}
 }
 
-int WeaponsResource :: CountAmmo( int iId ) 
+int WeaponsResource::CountAmmo( int iId ) 
 { 
 	if ( iId < 0 )
 		return 0;
@@ -52,7 +52,7 @@ int WeaponsResource :: CountAmmo( int iId )
 	return riAmmo[iId];
 }
 
-int WeaponsResource :: HasAmmo( WEAPON *p )
+int WeaponsResource::HasAmmo( WEAPON *p )
 {
 	if ( !p )
 		return FALSE;
@@ -66,7 +66,7 @@ int WeaponsResource :: HasAmmo( WEAPON *p )
 }
 
 
-void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
+void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 {
 	int i, iRes;
 
@@ -192,7 +192,7 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 }
 
 // Returns the first weapon for a given slot.
-WEAPON *WeaponsResource :: GetFirstPos( int iSlot )
+WEAPON *WeaponsResource::GetFirstPos( int iSlot )
 {
 	WEAPON *pret = NULL;
 
@@ -209,7 +209,7 @@ WEAPON *WeaponsResource :: GetFirstPos( int iSlot )
 }
 
 
-WEAPON* WeaponsResource :: GetNextActivePos( int iSlot, int iSlotPos )
+WEAPON* WeaponsResource::GetNextActivePos( int iSlot, int iSlotPos )
 {
 	if ( iSlotPos >= MAX_WEAPON_POSITIONS || iSlot >= MAX_WEAPON_SLOTS )
 		return NULL;
@@ -232,7 +232,7 @@ DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, Crosshair);
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
-DECLARE_MESSAGE(m_Ammo, WeapPickup);    // flashes a weapon pickup record
+DECLARE_MESSAGE(m_Ammo, WeapPickup);	// flashes a weapon pickup record
 DECLARE_MESSAGE(m_Ammo, HideWeapon);	// hides the weapon, ammo, and crosshair displays temporarily
 DECLARE_MESSAGE(m_Ammo, ItemPickup);
 
@@ -256,63 +256,16 @@ DECLARE_COMMAND(m_Ammo, PrevWeapon);
 
 #define HISTORY_DRAW_TIME	"5"
 
-int CHud :: MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf )
+int CHud::MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
-	int v1 = READ_BYTE( );
+	int m_bSoundVol = READ_BYTE( );
 
 	if ( READ_BYTE( ) )
-		gEngfuncs.pfnPlaySoundByName( "weapon/generic_reload.wav", v1 / 255.0f );
+		gEngfuncs.pfnPlaySoundByName( "weapon/generic_reload.wav", m_bSoundVol / 255.0f );
 	else
-		gEngfuncs.pfnPlaySoundByName( "weapon/generic_shot_reload.wav", v1 / 255.0f );
-
-	return 1;
-}
-
-void SendAudioToClient(char *Str, int a2)
-{
-	char *v2;
-	char *v3;
-	char *v4;
-	char v8[32];
-
-	v2 = strcpy(v8, "misc/talk.wav");
-	v3 = strstr(Str, "%!");
-	v4 = v3;
-
-	if ( v3 )
-	{
-		char v5;
-		char *i;
-
-		v5 = v3[1];
-
-		for ( i = v4 + 1; v5 > 32; ++i )
-		{
-			if ( v5 >= 122 )
-				break;
-			*v2 = v5;
-			v5 = i[1];
-			++v2;
-		}
-	
-		*v2 = 0;
-
-		strcpy(v4, i);
-	}
-	PlaySound(v8, 1);
-}
-
-int CHud :: MsgFunc_SendAudio( const char *pszName, int iSize, void *pbuf )
-{
-	BEGIN_READ( pbuf, iSize );
-
-	READ_BYTE( ); // tf?
-
-	char *sentence = READ_STRING( );
-
-	SendAudioToClient(sentence, iSize -1);
+		gEngfuncs.pfnPlaySoundByName( "weapon/generic_shot_reload.wav", m_bSoundVol / 255.0f );
 
 	return 1;
 }
@@ -370,7 +323,6 @@ void CHudAmmo::Reset(void)
 	gHR.Reset();
 
 	//	VidInit();
-
 }
 
 int CHudAmmo::VidInit(void)
@@ -397,6 +349,29 @@ int CHudAmmo::VidInit(void)
 	{
 		giABWidth = 10;
 		giABHeight = 2;
+	}
+
+	// AVSARTODOOOOO: The Disassembler says observer.txt is here!
+	int m_iObserverIndex;
+
+	client_sprite_t* m_pObserverList = SPR_GetList("sprites/observer.txt", &m_iObserverIndex);
+
+	if ( m_pObserverList )
+	{
+		client_sprite_t *p = GetSpriteList(m_pObserverList, "crosshair", ScreenWidth >= 640 ? 640 : 320, m_iObserverIndex);
+		if ( p )
+		{
+			char Buffer[32];
+			sprintf(Buffer, "sprites/%s.spr", p->szSprite);
+			if ( m_pWeapon )
+			{
+				m_pWeapon->hCrosshair = SPR_Load(Buffer); // this[10]
+				m_pWeapon->rcCrosshair = p->rc; // this[11]
+			}
+			return 1;
+		}
+		else if( m_pWeapon )
+			m_pWeapon->hCrosshair = NULL;
 	}
 
 	return 1;
@@ -450,8 +425,7 @@ void CHudAmmo::Think(void)
 //
 // Helper function to return a Ammo pointer from id
 //
-
-HSPRITE* WeaponsResource :: GetAmmoPicFromWeapon( int iAmmoId, wrect_t& rect )
+HSPRITE* WeaponsResource::GetAmmoPicFromWeapon( int iAmmoId, wrect_t& rect )
 {
 	for ( int i = 0; i < MAX_WEAPONS; i++ )
 	{
@@ -473,7 +447,7 @@ HSPRITE* WeaponsResource :: GetAmmoPicFromWeapon( int iAmmoId, wrect_t& rect )
 
 // Menu Selection Code
 
-void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
+void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 {
 	if ( gHUD.m_Menu.m_fMenuDisplayed && (fAdvance == FALSE) && (iDirection == 1) )	
 	{ // menu is overriding slot use commands
@@ -611,17 +585,13 @@ int CHudAmmo::MsgFunc_Crosshair(const char *pszName, int iSize, void *pbuf)
 	static wrect_t nullrc;
 	bool drawn = READ_BYTE();
 
-	if (gEngfuncs.pfnGetCvarFloat("cl_observercrosshair") == 0)
+	if (CVAR_GET_FLOAT("cl_observercrosshair") == 0)
 		return 1;
 
 	if (drawn) // sprites/observer.txt
-	{
-		SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
-	}
+		SetCrosshair(m_pWeapon->hCrosshair /*this[10]*/, m_pWeapon->rcCrosshair/*this[11]*/, 255, 255, 255);
 	else
-	{
 		SetCrosshair(0, nullrc, 0, 0, 0);
-	}
 
 	return 1;
 }

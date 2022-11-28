@@ -33,7 +33,7 @@ char g_szPrelocalisedMenuString[MAX_MENU_STRING];
 
 DECLARE_MESSAGE( m_Menu, ShowMenu );
 
-int CHudMenu :: Init( void )
+int CHudMenu::Init( void )
 {
 	gHUD.AddHudElem( this );
 
@@ -44,25 +44,25 @@ int CHudMenu :: Init( void )
 	return 1;
 }
 
-void CHudMenu :: InitHUDData( void )
+void CHudMenu::InitHUDData( void )
 {
 	m_fMenuDisplayed = 0;
 	m_bitsValidSlots = 0;
 	Reset();
 }
 
-void CHudMenu :: Reset( void )
+void CHudMenu::Reset( void )
 {
 	g_szPrelocalisedMenuString[0] = 0;
 	m_fWaitingForMore = FALSE;
 }
 
-int CHudMenu :: VidInit( void )
+int CHudMenu::VidInit( void )
 {
 	return 1;
 }
 
-int CHudMenu :: Draw( float flTime )
+int CHudMenu::Draw( float flTime )
 {
 	// check for if menu is set to disappear
 	if (m_flShutoffTime > 0)
@@ -83,7 +83,7 @@ int CHudMenu :: Draw( float flTime )
 			nlc++;
 	}
 	
-	menu_x = 20; menu_r = 255; menu_g = 255; menu_b = 20;
+	menu_x = 20; menu_r = 255; menu_g = 255; menu_b = 255;
 	menu_ralign = 0;
 
 	int y = (ScreenHeight / 2) - ((nlc / 2) * 12) - 40;
@@ -97,13 +97,12 @@ int CHudMenu :: Draw( float flTime )
 		if (*sptr == '\\'){
 
 			switch (*(sptr + 1)){
-
 				case '\0':{
 					sptr += 1;
 					break;
 				}
-				case 'w':{
-					menu_r = 255; menu_g = 255; menu_b = 255;
+				case 'R':{
+					menu_ralign = 1; menu_x = 299; // 299?? menu_x = ScreenWidth / 2
 					sptr += 2;
 					break;
 				}
@@ -112,18 +111,18 @@ int CHudMenu :: Draw( float flTime )
 					sptr += 2;
 					break;
 				}
-				case 'y':{
-					menu_r = 255; menu_g = 210; menu_b = 64;
-					sptr += 2;
-					break;
-				}
 				case 'r':{
 					menu_r = 210; menu_g = 24; menu_b = 0;
 					sptr += 2;
 					break;
 				}
-				case 'R':{
-					menu_ralign = 1; menu_x = ScreenWidth / 2;
+				case 'w':{
+					menu_r = 255; menu_g = 255; menu_b = 255;
+					sptr += 2;
+					break;
+				}
+				case 'y':{
+					menu_r = 255; menu_g = 210; menu_b = 64;
 					sptr += 2;
 					break;
 				}
@@ -138,7 +137,7 @@ int CHudMenu :: Draw( float flTime )
 		{
 			menu_ralign = 0;
 			menu_x = 20;
-			y += 15;
+			y += 12;
 			sptr += 1;
 			continue;
 		}
@@ -166,7 +165,7 @@ int CHudMenu :: Draw( float flTime )
 }
 
 // selects an item from the menu
-void CHudMenu :: SelectMenuItem( int menu_item )
+void CHudMenu::SelectMenuItem( int menu_item )
 {
 	// if menu_item is in a valid slot,  send a menuselect command to the server
 	if ( (menu_item > 0) && (m_bitsValidSlots & (1 << (menu_item-1))) )
@@ -189,7 +188,7 @@ void CHudMenu :: SelectMenuItem( int menu_item )
 //		byte : a boolean, TRUE if there is more string yet to be received before displaying the menu, FALSE if it's the last string
 //		string: menu string to display
 // if this message is never received, then scores will simply be the combined totals of the players.
-int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
+int CHudMenu::MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 

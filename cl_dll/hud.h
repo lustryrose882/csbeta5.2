@@ -299,6 +299,7 @@ public:
 	void UserCmd_ShowScores( void );
 	void UserCmd_HideScores( void );
 	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_ScoreAttrib( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
 	void DeathMsg( int killer, int victim );
@@ -319,6 +320,8 @@ public:
 	struct extra_player_info_t {
 		short frags;
 		short deaths;
+		bool died;
+		bool have_c4;
 		int teamnumber;
 		char teamname[MAX_TEAM_NAME];
 	};
@@ -347,6 +350,8 @@ public:
 	int m_fLastKillTime;
 	int m_iPlayerNum;
 	int m_iShowscoresHeld;
+	int m_Score_Skull;
+	int m_Score_C4;
 
 	void GetAllPlayersInfo( void );
 };
@@ -399,6 +404,9 @@ public:
 	int VidInit( void );
 	int Draw( float flTime );
 	int MsgFunc_SayText( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_SendAudio( const char *pszName, int iSize, void *pbuf );
+
+	void FindAudMessage( char *pStr );
 	void SayTextPrint( const char *pszBuf, int iBufSize );
 	void EnsureTextFitsInOneLineAndWrapIfHaveTo( int line );
 };
@@ -714,16 +722,15 @@ public:
 	~CHud();			// destructor, frees allocated memory
 
 	// user messages
-	int _cdecl MsgFunc_Damage(const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf);
-	int _cdecl MsgFunc_ResetHUD(const char *pszName,  int iSize, void *pbuf);
-	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
-	int _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_SendAudio( const char *pszName, int iSize, void *pbuf );
-	
+	int MsgFunc_Damage(const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf);
+	int MsgFunc_ResetHUD(const char *pszName,  int iSize, void *pbuf);
+	void MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
+	int MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_ReloadSound( const char *pszName, int iSize, void *pbuf );
+
 	// Screen information
 	SCREENINFO	m_scrinfo;
 
@@ -734,9 +741,7 @@ public:
 	// sprite indexes
 	int m_HUD_number_0;
 
-
 	void AddHudElem(CHudBase *p);
-
 };
 
 extern CHud gHUD;

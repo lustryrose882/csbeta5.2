@@ -31,7 +31,7 @@ DECLARE_MESSAGE( m_StatusBar, StatusValue );
 
 #define STATUSBAR_ID_LINE		1
 
-int CHudStatusBar :: Init( void )
+int CHudStatusBar::Init( void )
 {
 	gHUD.AddHudElem( this );
 
@@ -45,14 +45,14 @@ int CHudStatusBar :: Init( void )
 	return 1;
 }
 
-int CHudStatusBar :: VidInit( void )
+int CHudStatusBar::VidInit( void )
 {
 	// Load sprites here
 
 	return 1;
 }
 
-void CHudStatusBar :: Reset( void )
+void CHudStatusBar::Reset( void )
 {
 	m_iFlags &= ~HUD_ACTIVE;  // start out inactive
 	for ( int i = 0; i < MAX_STATUSBAR_LINES; i++ )
@@ -72,7 +72,7 @@ inline void InsertTextMsg( char *szDst, size_t sLen, const char *szMsgName)
 	else strncpy( szDst, szMsgName, sLen );
 }
 
-void CHudStatusBar :: ParseStatusString( int line_num )
+void CHudStatusBar::ParseStatusString( int line_num )
 {
 	// localise string first
 	char szBuffer[MAX_STATUSTEXT_LENGTH];
@@ -189,7 +189,7 @@ void CHudStatusBar :: ParseStatusString( int line_num )
 	}
 }
 
-int CHudStatusBar :: Draw( float fTime )
+int CHudStatusBar::Draw( float fTime )
 {
 	if ( m_bReparseString )
 	{
@@ -238,7 +238,7 @@ int CHudStatusBar :: Draw( float fTime )
 // if StatusValue[slotnum] != 0, the following string is drawn, upto the next newline - otherwise the text is skipped upto next newline
 // %pX, where X is an integer, will substitute a player name here, getting the player index from StatusValue[X]
 // %iX, where X is an integer, will substitute a number here, getting the number from StatusValue[X]
-int CHudStatusBar :: MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf )
+int CHudStatusBar::MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
@@ -264,7 +264,7 @@ int CHudStatusBar :: MsgFunc_StatusText( const char *pszName, int iSize, void *p
 // accepts two values:
 //		byte: index into the status value array
 //		short: value to store
-int CHudStatusBar :: MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf )
+int CHudStatusBar::MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
